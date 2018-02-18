@@ -1,5 +1,14 @@
 var searchHandler = require('../controllers/search')
+var subscribeHandler = require('../controllers/subscribe')
 var path = process.cwd()
+
+function isLoggedIn (req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  } else {
+    res.json({type: 'need_login', message: 'You need login'})
+  }
+}
 
 module.exports = function(app, passport) {
   app.route('/')
@@ -11,7 +20,7 @@ module.exports = function(app, passport) {
     .get(passport.authenticate('github'))
   app.route('/auth/github/callback')
     .get(passport.authenticate('github', {
-      successRedirect: '/success',
+      successRedirect: '/',
 			failureRedirect: '/failure'
     }))
 
@@ -19,14 +28,10 @@ module.exports = function(app, passport) {
     .get(passport.authenticate('google', { scope: ['profile'] }))
   app.route('/auth/google/callback')
     .get(passport.authenticate('google', {
-      successRedirect: '/success',
+      successRedirect: '/',
 			failureRedirect: '/failure'
     }))
 
-  app.route('/success')
-    .get( (req, res) => {
-      res.json({autht: 'success'})
-    })
   app.route('/failure')
     .get( (req, res) => {
       res.json({autht: 'failure'})
@@ -34,4 +39,7 @@ module.exports = function(app, passport) {
 
   app.route('/search/:location')
     .get(searchHandler)
+
+  app.route('/subscribe/:id')
+    .put(isLoggedIn, subscribeHandler)
 }

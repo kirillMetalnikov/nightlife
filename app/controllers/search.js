@@ -36,7 +36,8 @@ module.exports = (req, res) => {
         result.map( business => {
           return getSubsribers(business.id)
         })
-      ).then( subs => {
+      )
+      .then( subs => {
         var userID = req.user ? req.user._id.toString() : 'anonymous';
 
         res.json(result.map( (item, index) => {
