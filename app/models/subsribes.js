@@ -6,4 +6,4 @@ var Subsribes = new Schema({
   users: Array
 });
 
-module.exports = mongoose.model('Subsribes', Subsribes);
+module.exports = mongoose.model('subsribes', Subsribes);
