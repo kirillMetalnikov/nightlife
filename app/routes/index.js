@@ -1,3 +1,4 @@
+var searchHandler = require('../controllers/search')
 var path = process.cwd()
 
 module.exports = function(app, passport) {
@@ -30,4 +31,7 @@ module.exports = function(app, passport) {
     .get( (req, res) => {
       res.json({autht: 'failure'})
     })
+
+  app.route('/search/:location')
+    .get(searchHandler)
 }
