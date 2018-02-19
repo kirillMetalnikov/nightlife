@@ -15,12 +15,32 @@ var getSubsribers = id => {
           if (err) {reject(err)}
           resolve(result)
         }
-      );
+      )
+  })
+}
+
+var randTimer = (id) => {
+  var timer = Math.random() * 1000
+
+  return new Promise( (resolve, reject) => {
+    setTimeout( id => resolve, timer)
+  })
+}
+
+var getRewies = id => {
+  return new Promise( (resolve, reject) => {
+    yelp.reviews(id)
+      .then( data => {
+        resolve(data)
+      })
+      .catch (err => {
+        console.log(err)
+      })
   })
 }
 
 module.exports = (req, res) => {
-  yelp.search({term: 'bar', location: req.params.location})
+  yelp.search({term: 'nightlife', location: req.params.location})
     .then(data => {
       data = JSON.parse(data)
 

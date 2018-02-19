@@ -37,6 +37,12 @@ module.exports = function(app, passport) {
       res.json({autht: 'failure'})
     })
 
+  app.route('/logout')
+		.get(function (req, res) {
+			req.logout();
+			res.redirect('/');
+		});
+    
   app.route('/search/:location')
     .get(searchHandler)
 
