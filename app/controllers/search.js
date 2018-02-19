@@ -7,23 +7,22 @@ var yelp = new Yelp({
   app_secret: process.env.YELP_CLIENT_SECRET
 })
 
-var getSubsribers = id => {
+var addSubsribers = (business, userID) => {
+  var {id} = business
   return new Promise( (resolve, reject) => {
     Subsribes
       .findOne({ 'yelp_id': id})
-      .exec( (err, result) => {
+      .exec( (err, subs) => {
           if (err) {reject(err)}
-          resolve(result)
+          var {users} = subs ? subs : []
+          resolve(
+            {...business,
+              areYouSubsribe: users && (users.indexOf(userID) != -1),
+              subscribersCount: users ? users.length : 0
+            }
+          )
         }
       )
-  })
-}
-
-var randTimer = (id) => {
-  var timer = Math.random() * 1000
-
-  return new Promise( (resolve, reject) => {
-    setTimeout( id => resolve, timer)
   })
 }
 
@@ -40,40 +39,25 @@ var getRewies = id => {
 }
 
 module.exports = (req, res) => {
-  yelp.search({term: 'nightlife', location: req.params.location})
+  yelp.search({term: 'bars', location: req.params.location})
     .then(data => {
       data = JSON.parse(data)
 
-      var result = data.businesses.map( business => {
+      return data.businesses.map( business => {
         var {name, image_url, url, id} = business
         return {name, image_url, url, id}
       })
-
-      return result
     })
-    .then(result => {
-      Promise.all(
-        result.map( business => {
-          return getSubsribers(business.id)
+    .then(businesses => {
+      var userID = req.user ? req.user._id.toString() : 'anonymous';
+      return Promise.all(
+        businesses.map( business => {
+          return addSubsribers(business, userID)
         })
       )
-      .then( subs => {
-        var userID = req.user ? req.user._id.toString() : 'anonymous';
-
-        res.json(result.map( (item, index) => {
-          var {users} = subs[index] ? subs[index] : []
-          return {
-            ...item,
-             areYouSubsribe: users && (users.indexOf(userID) != -1),
-              subscribersCount: users ? users.length : 0
-          }
-//          return {...item, users}
-        }))
-      })
-      .catch( err => {
-        console.log(err)
-
-      })
+    })
+    .then( withSubs => {
+      res.json(withSubs)
     })
     .catch(function (err) {
         console.error(err)
