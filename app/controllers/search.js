@@ -1,6 +1,6 @@
 var Yelp = require('yelpv3')
-
 var Subsribes = require('../models/subsribes.js')
+
 
 var yelp = new Yelp({
   app_id: process.env.YELP_CLIENT_ID,
@@ -41,27 +41,27 @@ var addRewies = businesses => {
 
 module.exports = (req, res) => {
   yelp.search({term: 'bars', location: req.params.location})
-    .then(data => {
-      data = JSON.parse(data)
+  .then(data => {
+    data = JSON.parse(data)
 
-      return data.businesses.map( business => {
-        var {name, image_url, url, id} = business
-        return {name, image_url, url, id}
+    return data.businesses.map( business => {
+      var {name, image_url, url, id} = business
+      return {name, image_url, url, id}
+    })
+  })
+  .then(addRewies)
+  .then(businesses => {
+    var userID = req.user ? req.user._id.toString() : 'anonymous';
+    return Promise.all(
+      businesses.map( business => {
+        return addSubsribers(business, userID)
       })
-    })
-    .then(addRewies)
-    .then(businesses => {
-      var userID = req.user ? req.user._id.toString() : 'anonymous';
-      return Promise.all(
-        businesses.map( business => {
-          return addSubsribers(business, userID)
-        })
-      )
-    })
-    .then( withSubs => {
-      res.json(withSubs)
-    })
-    .catch(function (err) {
-        console.error(err)
-    })
+    )
+  })
+  .then( withSubs => {
+    res.json(withSubs)
+  })
+  .catch(function (err) {
+      res.json({type: 'error', err})
+  })
 }

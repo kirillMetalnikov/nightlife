@@ -14,11 +14,16 @@ module.exports = (req, res) => {
           var newSubsribe = new Subsribe()
           newSubsribe.yelp_id = req.params.id
           newSubsribe.users = users.concat(userID)
-          newSubsribe.save(function (err) {
+          newSubsribe.save(function (err, subs) {
             if (err) {
               throw err
             }
-            res.json(newSubsribe)
+            let {users} = subs ? subs : []
+            res.json(
+              {id: subs.yelp_id,
+                areYouSubsribe: users && (users.indexOf(userID) != -1),
+                subscribersCount: users ? users.length : 0
+              })
           })
         } else {
 
@@ -36,9 +41,15 @@ module.exports = (req, res) => {
               {$set: {'users' : users}},
               {new: true}
             )
-            .exec(function (err, result) {
-                if (err) { throw err; }
-                res.json(result)
+            .exec(function (err, subs) {
+                if (err) { throw err}
+                let {users} = subs ? subs : []
+                res.json(
+                  {id: subs.yelp_id,
+                    areYouSubsribe: users && (users.indexOf(userID) != -1),
+                    subscribersCount: users ? users.length : 0
+                  })
+
               }
             )
         }
