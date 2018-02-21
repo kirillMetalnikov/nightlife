@@ -1,57 +1,43 @@
 var Subsribe = require('../models/subsribes')
 
 module.exports = (req, res) => {
-  var userID = req.user ? req.user._id.toString() : 'anonymous'
-
+  let userID = req.user ? req.user._id.toString() : 'anonymous'
     Subsribe
       .findOne({ 'yelp_id': req.params.id})
-      .exec((err, result) => {
-        if (err) { throw err }
-
-        var users = []
-
-        if (!result) {
-          var newSubsribe = new Subsribe()
+      .exec()
+      .then(subsc => {
+        if(!subsc) {
+          let users = []
+          let newSubsribe = new Subsribe()
           newSubsribe.yelp_id = req.params.id
           newSubsribe.users = users.concat(userID)
-          newSubsribe.save(function (err, subs) {
-            if (err) {
-              throw err
-            }
-            let {users} = subs ? subs : []
-            res.json(
-              {id: subs.yelp_id,
-                areYouSubsribe: users && (users.indexOf(userID) != -1),
-                subscribersCount: users ? users.length : 0
-              })
-          })
-        } else {
 
-          if (result.users.indexOf(userID) == -1) {
-            users = result.users.concat(userID)
+          return newSubsribe.save()
+        } else {
+          if (subsc.users.indexOf(userID) == -1) {
+            users = subsc.users.concat(userID)
           } else {
-            users = result.users.filter (user => {
+            users = subsc.users.filter (user => {
               return (user != userID)
             })
           }
 
-          Subsribe
-            .findOneAndUpdate(
+          return  Subsribe.findOneAndUpdate(
               {'yelp_id': req.params.id},
               {$set: {'users' : users}},
-              {new: true}
-            )
-            .exec(function (err, subs) {
-                if (err) { throw err}
-                let {users} = subs ? subs : []
-                res.json(
-                  {id: subs.yelp_id,
-                    areYouSubsribe: users && (users.indexOf(userID) != -1),
-                    subscribersCount: users ? users.length : 0
-                  })
-
-              }
-            )
+              {new: true})
+            .exec()
         }
+      })
+      .then( subs => {
+        let {users} = subs ? subs : []
+        res.json(
+          {id: subs.yelp_id,
+            areYouSubsribe: users && (users.indexOf(userID) != -1),
+            subscribersCount: users ? users.length : 0
+          })
+      })
+      .catch( err => {
+        res.json({status: 'error', err: err.toString()})
       })
 }
