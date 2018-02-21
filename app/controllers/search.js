@@ -43,7 +43,6 @@ module.exports = (req, res) => {
   yelp.search({term: 'bars', location: req.params.location})
   .then(data => {
     data = JSON.parse(data)
-
     return data.businesses.map( business => {
       var {name, image_url, url, id} = business
       return {name, image_url, url, id}
@@ -62,6 +61,6 @@ module.exports = (req, res) => {
     res.json(withSubs)
   })
   .catch(function (err) {
-      res.json({type: 'error', err})
+      res.json({type: 'error', err: err.toString()})
   })
 }
