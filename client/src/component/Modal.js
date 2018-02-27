@@ -8,7 +8,16 @@ class Message extends Component {
   constructor(props) {
     super(props)
   }
-
+  
+  loginRender() {
+    return (
+      <div>
+          Login with <a href='/auth/github'>github </a>
+          or with <a href='/auth/google'>google</a>
+      </div>
+    )
+  }
+  
   render () {
     let {header, text, show} = this.props.message
     return (
@@ -24,6 +33,8 @@ class Message extends Component {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {header == 'Login' ? this.loginRender() :''}
+          <br/>
           {text}
         </Modal.Body>
         <Modal.Footer>

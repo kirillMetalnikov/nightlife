@@ -9,10 +9,6 @@ class SearchItem extends Component {
     return () => this.props.toogleSubscribe(id)
   }
 
-  getB() {
-    this.props.getBusinesses('new york')
-  }
-
   render() {
     var {name, image_url, url, id, subscribersCount, reviews, areYouSubsribe} = this.props.item
 
@@ -20,7 +16,7 @@ class SearchItem extends Component {
       <div style={{marginBottom: 10, borderBottom: "1px solid gray", paddingBottom: 10}}>
         <Row>
           <Col xs={6} sm ={6} md={2} lg={2}>
-            <Image src={image_url} rounded width='170px' height='100px' onClick = {this.getB.bind(this)} />
+            <Image src={image_url} rounded width='170px' height='100px'/>
           </Col>
           <Col xs={6} sm ={6} md={10} lg={10}>
             <a href={url} target="_blank">

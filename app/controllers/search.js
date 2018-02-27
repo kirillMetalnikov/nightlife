@@ -1,6 +1,7 @@
 var Yelp = require('yelpv3')
 var Subsribes = require('../models/subsribes.js')
 
+const QUEUE_LENGTH = 10
 
 var yelp = new Yelp({
   app_id: process.env.YELP_CLIENT_ID,
@@ -27,6 +28,7 @@ var addSubsribers = (business, userID) => {
 }
 
 var addRewies = businesses => {
+
   return new Promise ( (resolve, reject) => {
     // [].map or other method is not right for async/await. Then for it need a "for"
     return ( async () => {
@@ -48,7 +50,26 @@ module.exports = (req, res) => {
       return {name, image_url, url, id}
     })
   })
-  .then(addRewies)
+  .then (business => {
+    var streams = []
+    while (business.length > 0) {
+      streams.push(business.splice(-QUEUE_LENGTH))
+    }
+    return Promise.all (
+      streams.map (stream => {
+        return addRewies(stream)
+      })
+    )
+  })
+  .then(streams => {
+    return new Promise( (resolve, reject) => {
+      var businesses = []
+      while (streams.length > 0) {
+        businesses = businesses.concat(streams.pop())
+      }
+      resolve(businesses)
+    })
+  })
   .then(businesses => {
     var userID = req.user ? req.user._id.toString() : 'anonymous';
     return Promise.all(
