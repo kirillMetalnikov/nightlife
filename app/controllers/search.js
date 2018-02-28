@@ -1,11 +1,11 @@
-var Yelp = require('yelpv3')
 var Subsribes = require('../models/subsribes.js')
+var axios = require('axios')
 
 const QUEUE_LENGTH = 10
+const URL = 'https://api.yelp.com/v3/businesses/search?term=nightlife&location='
 
-var yelp = new Yelp({
-  app_id: process.env.YELP_CLIENT_ID,
-  app_secret: process.env.YELP_CLIENT_SECRET
+var yelp = axios.create({
+  headers: {'Authorization': 'Bearer 7AxHtMfSYTicIFc1hDSoPhX16coIemp4VhHEYWQTuC2GRGaB1bzrGaf8RT9f4YWdzFLIS8bhWI6u_zxG5nDR8iRHj-LAyvMx8E5sIHxBrkS38H3MidumpoZ9_fGWWnYx'}
 })
 
 var addSubsribers = (business, userID) => {
@@ -28,13 +28,15 @@ var addSubsribers = (business, userID) => {
 }
 
 var addRewies = businesses => {
-
+  const URL_REWIES = 'https://api.yelp.com/v3/businesses/'
   return new Promise ( (resolve, reject) => {
     // [].map or other method is not right for async/await. Then for it need a "for"
     return ( async () => {
       for (let i = 0; i < businesses.length; i++) {
-        let {reviews} = JSON.parse(await yelp.reviews(businesses[i].id))
-        businesses[i].reviews = reviews[0].text
+        let response = await yelp.get(URL_REWIES + businesses[i].id + '/reviews')
+        let {reviews} = response.data
+
+        businesses[i].reviews = reviews[0] && reviews[0].text
       }
       resolve(businesses)
     })()
@@ -42,9 +44,8 @@ var addRewies = businesses => {
 }
 
 module.exports = (req, res) => {
-  yelp.search({term: 'bars', location: req.params.location})
-  .then(data => {
-    data = JSON.parse(data)
+  yelp.get(URL + req.params.location)
+  .then( ({data}) => {
     return data.businesses.map( business => {
       var {name, image_url, url, id} = business
       return {name, image_url, url, id}
