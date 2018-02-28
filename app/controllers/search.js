@@ -1,11 +1,12 @@
 var Subsribes = require('../models/subsribes.js')
 var axios = require('axios')
 
-const QUEUE_LENGTH = 10
+const QUEUE_LENGTH = 20
 const URL = 'https://api.yelp.com/v3/businesses/search?term=nightlife&location='
+const YELP_API_KEY = 'Bearer ' + process.env.YELP_API_KEY
 
 var yelp = axios.create({
-  headers: {'Authorization': 'Bearer 7AxHtMfSYTicIFc1hDSoPhX16coIemp4VhHEYWQTuC2GRGaB1bzrGaf8RT9f4YWdzFLIS8bhWI6u_zxG5nDR8iRHj-LAyvMx8E5sIHxBrkS38H3MidumpoZ9_fGWWnYx'}
+  headers: {'Authorization': YELP_API_KEY}
 })
 
 var addSubsribers = (business, userID) => {
